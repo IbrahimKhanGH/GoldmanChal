@@ -9,15 +9,12 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-primary shadow-lg">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <span className="text-white text-xl font-bold">FinanceApp</span>
-            </Link>
-          </div>
-
+    <nav className="bg-white shadow-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center">
+            <span className="text-2xl font-bold text-primary">Uni<span className="text-secondary">Fi</span></span>
+          </Link>
           <div className="flex items-center space-x-4">
             <Link to="/dashboard" className={`px-3 py-2 ${isActive('/dashboard')}`}>
               Dashboard
