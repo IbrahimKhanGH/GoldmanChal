@@ -121,7 +121,7 @@ function Profile() {
 
                 {/* Existing Notification Settings */}
                 <div className="pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-medium mb-4">Notification Settings</h3>
+                  <h3 className="text-lg font-medium mb-4">Notification Settingss</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="flex items-center space-x-2">
