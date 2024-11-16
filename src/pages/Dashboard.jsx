@@ -10,7 +10,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 function Dashboard() {
-  // Mock data - in a real app, this would come from your backend
   const walletBalance = 1250.00;
   const savingsGoals = [
     { id: 1, name: "Emergency Fund", target: 1000, current: 750 },
@@ -58,62 +57,58 @@ function Dashboard() {
         />
       </div>
 
-      {/* Savings Goals */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Savings Goals</h2>
-          <Link to="/savings" className="text-secondary hover:underline">View All</Link>
-        </div>
-        <div className="space-y-4">
-          {savingsGoals.map(goal => (
-            <div key={goal.id} className="border-b pb-4">
-              <div className="flex justify-between mb-2">
-                <span className="font-medium">{goal.name}</span>
-                <span className="text-gray-600">
-                  ${goal.current} / ${goal.target}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-secondary h-2.5 rounded-full"
-                  style={{ width: `${(goal.current / goal.target) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Transactions */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Transactions</h2>
-          <Link to="/transactions" className="text-secondary hover:underline">View All</Link>
-        </div>
-        <div className="space-y-4">
-          {recentTransactions.map(transaction => (
-            <div key={transaction.id} className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center">
-                <TransactionIcon type={transaction.type} />
-                <div className="ml-4">
-                  <p className="font-medium">{transaction.description}</p>
-                  <p className="text-sm text-gray-500">{transaction.date}</p>
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Savings Goals */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Savings Goals</h3>
+          <div className="space-y-4">
+            {savingsGoals.map(goal => (
+              <div key={goal.id} className="border-b pb-4">
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">{goal.name}</span>
+                  <span className="text-gray-600">
+                    ${goal.current} / ${goal.target}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-secondary h-2.5 rounded-full"
+                    style={{ width: `${(goal.current / goal.target) * 100}%` }}
+                  ></div>
                 </div>
               </div>
-              <span className={`font-medium ${
-                transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)}
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Recent Transactions</h3>
+          <div className="space-y-4">
+            {recentTransactions.map(transaction => (
+              <div key={transaction.id} className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center">
+                  <TransactionIcon type={transaction.type} />
+                  <div className="ml-4">
+                    <p className="font-medium">{transaction.description}</p>
+                    <p className="text-sm text-gray-500">{transaction.date}</p>
+                  </div>
+                </div>
+                <span className={`font-medium ${
+                  transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Helper Components
 function QuickActionCard({ title, icon, link, color }) {
   return (
     <Link to={link} className={`${color} rounded-lg p-4 flex items-center justify-between hover:opacity-90 transition-opacity`}>
@@ -132,4 +127,4 @@ function TransactionIcon({ type }) {
   return icons[type] || <ClockIcon className="h-6 w-6 text-gray-600" />;
 }
 
-export default Dashboard; 
+export default Dashboard;
