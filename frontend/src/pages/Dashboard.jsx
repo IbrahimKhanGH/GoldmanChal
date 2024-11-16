@@ -1,38 +1,59 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   BanknotesIcon, 
   ArrowTrendingUpIcon,
   CreditCardIcon,
   UserGroupIcon,
-  BuildingLibraryIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  QrCodeIcon
 } from '@heroicons/react/24/outline';
 import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function Dashboard() {
-  const [userType, setUserType] = useState('phone'); // or 'bank'
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
 
-  // Mock data - would come from your backend
-  const mockDashboardData = {
-    balance: 1250.00,
-    weeklySpending: 450.00,
-    monthlySpending: 1800.00,
-    savingsGoal: 5000.00,
-    savingsProgress: 2500.00,
-    recentTransactions: [
-      { id: 1, type: 'deposit', amount: 100, date: '2024-03-10', description: 'Cash Deposit' },
-      { id: 2, type: 'payment', amount: -50, date: '2024-03-09', description: 'Utility Bill' },
-      { id: 3, type: 'transfer', amount: -30, date: '2024-03-08', description: 'To John' },
-    ],
-    spendingTrend: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      data: [65, 59, 80, 81, 56, 55, 40]
-    }
-  };
-
   useEffect(() => {
+    const mockDashboardData = {
+      balance: 1250.00,
+      weeklySpending: 450.00,
+      monthlySpending: 1800.00,
+      savingsGoal: 5000.00,
+      savingsProgress: 2500.00,
+      recentTransactions: [
+        { id: 1, type: 'deposit', amount: 100, date: '2024-03-10', description: 'Cash Deposit' },
+        { id: 2, type: 'payment', amount: -50, date: '2024-03-09', description: 'Utility Bill' },
+        { id: 3, type: 'transfer', amount: -30, date: '2024-03-08', description: 'To John' },
+      ],
+      spendingTrend: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        data: [65, 59, 80, 81, 56, 55, 40]
+      }
+    };
+
     // Simulate API call
     setTimeout(() => {
       setDashboardData(mockDashboardData);
@@ -40,31 +61,37 @@ function Dashboard() {
     }, 1000);
   }, []);
 
+  const QuickActionCard = ({ icon, title, path, color }) => (
+    <button 
+      onClick={() => navigate(path)}
+      className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-all flex flex-col items-center"
+    >
+      <div className={`${color} mb-2`}>
+        {icon}
+      </div>
+      <h3 className="text-sm font-medium text-gray-800">{title}</h3>
+    </button>
+  );
+
   const renderQuickActions = () => (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
       <QuickActionCard
-        icon={<BanknotesIcon className="h-6 w-6" />}
-        title="Send Money"
-        link="/transfers"
-        color="text-blue-600"
-      />
-      <QuickActionCard
-        icon={<CreditCardIcon className="h-6 w-6" />}
-        title="Pay Bills"
-        link="/payments"
+        icon={<QrCodeIcon className="h-5 w-5" />}
+        title="Scan & Deposit"
+        path="/scan"
         color="text-purple-600"
       />
       <QuickActionCard
-        icon={<ArrowTrendingUpIcon className="h-6 w-6" />}
-        title="Savings"
-        link="/savings"
-        color="text-green-600"
+        icon={<BanknotesIcon className="h-5 w-5" />}
+        title="Send Money"
+        path="/transfers"
+        color="text-blue-600"
       />
       <QuickActionCard
-        icon={<UserGroupIcon className="h-6 w-6" />}
-        title="Refer & Earn"
-        link="/referral"
-        color="text-orange-600"
+        icon={<CreditCardIcon className="h-5 w-5" />}
+        title="Pay Bills"
+        path="/payments"
+        color="text-green-600"
       />
     </div>
   );
@@ -164,18 +191,6 @@ function Dashboard() {
       {renderBalanceCards()}
       {renderTransactionsAndChart()}
     </div>
-  );
-}
-
-// Quick Action Card Component
-function QuickActionCard({ icon, title, link, color }) {
-  return (
-    <button className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-      <div className={`${color} mb-2`}>
-        {icon}
-      </div>
-      <h3 className="font-medium text-gray-800">{title}</h3>
-    </button>
   );
 }
 

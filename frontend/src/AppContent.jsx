@@ -10,6 +10,7 @@ import Savings from './pages/Savings';
 import Payments from './pages/Payments';
 import Transfers from './pages/Transfers';
 import Profile from './pages/Profile';
+import Scan from './pages/Scan';
 
 function AppContent() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function AppContent() {
         <Route path="/payments" element={<Payments />} />
         <Route path="/transfers" element={<Transfers />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/scan" element={<Scan />} />
       </Routes>
     </div>
   );
