@@ -11,7 +11,6 @@ function Register() {
   const navigate = useNavigate();
   const [linkToken, setLinkToken] = useState(null);
   const [registrationType, setRegistrationType] = useState(null);
-
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [registrationStep, setRegistrationStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -65,7 +64,6 @@ function Register() {
   useEffect(() => {
     if (registrationType === 'bank') {
       fetchLinkToken();
-      setShowPlaidOverlay(true);
     }
   }, [registrationType]);
 
@@ -84,7 +82,7 @@ function Register() {
     }
   };
 
-  const config = {
+  const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess: async (public_token, metadata) => {
       try {
@@ -95,65 +93,57 @@ function Register() {
           },
           body: JSON.stringify({ public_token }),
         });
-        setShowPlaidOverlay(false);
         navigate('/dashboard');
       } catch (error) {
         console.error('Error exchanging public token:', error);
       }
     },
     onExit: () => {
-      setShowPlaidOverlay(false);
       setRegistrationType(null);
     },
-  };
-
-  const { open, ready } = usePlaidLink(config);
-
-  useEffect(() => {
-    if (showPlaidOverlay && ready && linkToken) {
-      open();
-    }
-  }, [showPlaidOverlay, ready, linkToken, open]);
+  });
 
   if (!registrationType) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-white">Join UniFi</h1>
-            <p className="text-xl text-gray-300 mt-4">Choose how you want to get started</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900 flex items-center justify-center px-4">
+        <div className="max-w-4xl w-full">
+          <h2 className="text-4xl font-bold text-white text-center mb-4">
+            Choose Your Path to Financial Freedom
+          </h2>
+          <p className="text-gray-300 text-center mb-12 text-lg">
+            Select the option that best suits your needs
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Bank Account Option */}
             <div 
-              onClick={() => setRegistrationType('bank')}
               className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl p-8 hover:bg-opacity-20 transition-all cursor-pointer"
+              onClick={() => setRegistrationType('bank')}
             >
               <div className="flex items-center justify-center w-16 h-16 bg-green-500 bg-opacity-20 rounded-full mb-6">
                 <BanknotesIcon className="h-8 w-8 text-green-400" />
               </div>
               <h3 className="text-2xl font-semibold text-white mb-4">
-                Connect Bank Account
+                I Have a Bank Account
               </h3>
-              <p className="text-gray-300">
-                Connect your existing bank account securely using Plaid.
+              <p className="text-gray-300 mb-6">
+                Connect your existing bank account securely using Plaid for seamless financial management.
               </p>
             </div>
 
-            {/* Regular Registration Option */}
+            {/* Non-Bank Option */}
             <div 
-              onClick={() => setRegistrationType('regular')}
               className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl p-8 hover:bg-opacity-20 transition-all cursor-pointer"
+              onClick={() => setRegistrationType('phone')}
             >
               <div className="flex items-center justify-center w-16 h-16 bg-blue-500 bg-opacity-20 rounded-full mb-6">
                 <DevicePhoneMobileIcon className="h-8 w-8 text-blue-400" />
               </div>
               <h3 className="text-2xl font-semibold text-white mb-4">
-                Basic Registration
+                I Don't Have a Bank Account
               </h3>
-              <p className="text-gray-300">
-                Create an account with email and password.
+              <p className="text-gray-300 mb-6">
+                Start your digital banking journey with just your phone number or email.
               </p>
             </div>
           </div>
@@ -202,7 +192,7 @@ function Register() {
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
           <button
             onClick={() => registrationStep === 1 ? setShowRegistrationForm(false) : setRegistrationStep(1)}
             className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
@@ -406,7 +396,7 @@ function Register() {
     );
   }
 
-  return null; // When Plaid is handling the flow
+  return null;
 }
 
 export default Register;
