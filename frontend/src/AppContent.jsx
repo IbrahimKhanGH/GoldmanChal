@@ -2,6 +2,8 @@ import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import SplashPage from './pages/SplashPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Wallet from './pages/Wallet';
 import Savings from './pages/Savings';
@@ -11,13 +13,15 @@ import Profile from './pages/Profile';
 
 function AppContent() {
   const location = useLocation();
-  const showNavbar = location.pathname !== '/';
+  const showNavbar = !['/login', '/register', '/'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-100">
       {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<SplashPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/savings" element={<Savings />} />

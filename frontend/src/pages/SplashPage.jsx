@@ -17,8 +17,8 @@ function SplashPage() {
             <Link to="/register" className="btn-primary">
               Get Started
             </Link>
-            <Link to="/learn-more" className="btn-primary bg-transparent border-2">
-              Learn More
+            <Link to="/login" className="btn-primary bg-transparent border-2">
+              Sign In
             </Link>
           </div>
           
