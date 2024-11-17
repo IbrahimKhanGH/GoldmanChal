@@ -14,9 +14,12 @@ function SplashPage() {
         {/* Hero Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-5xl font-bold mb-6 text-white">
-              Welcome to UniFi
-              <span className="block text-secondary mt-2">Universal Finance for All</span>
+            <h1 className="mb-6">
+              <span className="text-6xl font-black font-['Orbitron'] block mb-4">
+                <span className="text-white">UNI</span>
+                <span className="bg-gradient-to-r from-secondary to-indigo-600 text-transparent bg-clip-text">FI</span>
+              </span>
+              <span className="text-4xl font-bold text-secondary block">Universal Finance for All</span>
             </h1>
             <p className="text-xl mb-8 text-gray-300">
               Your bridge to digital banking. Simple, accessible, and designed for everyone.

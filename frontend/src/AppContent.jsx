@@ -11,6 +11,7 @@ import Payments from './pages/Payments';
 import Transfers from './pages/Transfers';
 import Profile from './pages/Profile';
 import Scan from './pages/Scan';
+import Budgeting from './pages/Budgeting';
 
 function AppContent() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function AppContent() {
         <Route path="/transfers" element={<Transfers />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/scan" element={<Scan />} />
+        <Route path="/budgeting" element={<Budgeting />} />
       </Routes>
     </div>
   );

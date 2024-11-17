@@ -175,7 +175,7 @@ function Dashboard() {
               <div>
                 <p className="text-white/80 text-sm">Total Balance</p>
                 <h2 className="text-3xl font-bold text-white mt-1">
-                  {isLoading ? 'Loading...' : `$${balance.toFixed(2)}`}
+                  {isLoading ? 'Loading...' : `$${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </h2>
                 <p className="text-white/60 text-sm mt-2">+15.3% from last month</p>
               </div>
@@ -228,9 +228,9 @@ function Dashboard() {
             className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center"
           >
             <div className="bg-green-500/10 p-3 rounded-lg mb-2">
-              <QrCodeIcon className="h-6 w-6 text-green-500" />
+              <BanknotesIcon className="h-6 w-6 text-green-500" />
             </div>
-            <span className="text-gray-300">Deposit Cash</span>
+            <span className="text-gray-300">Deposit Money Order</span>
           </button>
 
           <button 
@@ -256,7 +256,10 @@ function Dashboard() {
             <span className="text-gray-300">Send Money</span>
           </button>
 
-          <button className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center">
+          <button 
+            onClick={() => navigate('/budgeting')} 
+            className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center"
+          >
             <div className="bg-orange-500/10 p-3 rounded-lg mb-2">
               <CalculatorIcon className="h-6 w-6 text-orange-500" />
             </div>
