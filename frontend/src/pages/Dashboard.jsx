@@ -13,6 +13,7 @@ import {
   GiftIcon,
   PhoneIcon,
   DocumentIcon,
+  CalculatorIcon,
 } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import QRScanner from '../components/QRScanner';
@@ -185,10 +186,10 @@ function Dashboard() {
           </button>
 
           <button className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center">
-            <div className="bg-yellow-500/10 p-3 rounded-lg mb-2">
-              <UserGroupIcon className="h-6 w-6 text-yellow-500" />
+            <div className="bg-orange-500/10 p-3 rounded-lg mb-2">
+              <CalculatorIcon className="h-6 w-6 text-orange-500" />
             </div>
-            <span className="text-gray-300">Split Bill</span>
+            <span className="text-gray-300">Budgeting</span>
           </button>
         </div>
 
