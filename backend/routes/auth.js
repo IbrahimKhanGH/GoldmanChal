@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
 
     console.log('Attempting to save user:', user);
 
-    await user.save();
+    await user.save(); 
     console.log('User saved successfully');
 
     const token = jwt.sign(
@@ -53,18 +53,22 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.get('/test', (req, res) => {
+  res.json({ message: 'Auth routes working' });
+});
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const token = jwt.sign(
@@ -88,4 +92,51 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router; 
+// Temporary route to create a test user
+router.post('/create-test-user', async (req, res) => {
+  try {
+    console.log('Attempting to create test user');
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: 'test@example.com' });
+    if (existingUser) {
+      console.log('User already exists');
+      return res.json({ 
+        message: 'Test user already exists',
+        email: 'test@example.com',
+        password: 'testpassword123'
+      });
+    }
+
+    // Create new user
+    const hashedPassword = await bcrypt.hash('testpassword123', 10);
+    const user = new User({
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      password: hashedPassword,
+      phone: '1234567890',
+      accounts: [{
+        accountType: 'checking',
+        balance: 1000
+      }]
+    });
+
+    await user.save();
+    console.log('Test user created successfully');
+
+    res.json({ 
+      message: 'Test user created successfully', 
+      email: 'test@example.com',
+      password: 'testpassword123'
+    });
+  } catch (error) {
+    console.error('Error creating test user:', error);
+    res.status(500).json({ 
+      message: 'Error creating test user',
+      error: error.message 
+    });
+  }
+});
+
+module.exports = router;

@@ -4,6 +4,7 @@ import {
   ArrowLeftIcon,
   DevicePhoneMobileIcon 
 } from '@heroicons/react/24/outline';
+import axios from 'axios';
 
 function Login() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ function Login() {
     country: '',
   });
   const [passwordError, setPasswordError] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const handleInputChange = (e) => {
     setFormData({
@@ -32,10 +34,24 @@ function Login() {
     });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // In a real app, you would validate credentials here
-    navigate('/dashboard');
+    setLoginError('');
+
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setLoginError(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    }
   };
 
   const handleNextStep = (e) => {
@@ -86,10 +102,12 @@ function Login() {
 
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
-                  type="tel"
-                  name="phone"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary focus:border-secondary"
                   required
                 />
@@ -100,10 +118,16 @@ function Login() {
                 <input
                   type="password"
                   name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary focus:border-secondary"
                   required
                 />
               </div>
+
+              {loginError && (
+                <div className="text-red-500 text-sm">{loginError}</div>
+              )}
 
               <button
                 type="submit"
