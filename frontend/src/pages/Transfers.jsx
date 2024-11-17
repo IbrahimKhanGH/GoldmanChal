@@ -147,24 +147,31 @@ function Transfers() {
           <div className="bg-white bg-opacity-10 rounded-lg shadow-lg p-6 backdrop-blur-md h-fit">
             <h2 className="text-2xl font-semibold mb-6 text-gray-100">Recent Transfers</h2>
             <div className="space-y-4">
-              {recentTransfers.map((transfer) => (
-                <div key={transfer._id} className="flex justify-between items-center border-b border-gray-700 pb-4">
-                  <div>
-                    <p className="font-medium text-gray-300">
-                      {transfer.type === 'sent' ? 'To: ' : 'From: '}
-                      {transfer.type === 'sent' ? transfer.recipientEmail : transfer.senderEmail}
-                    </p>
-                    <p className="text-sm text-gray-500">{new Date(transfer.date).toLocaleDateString()}</p>
+              {recentTransfers.map((transfer) => {
+                console.log('Transfer:', transfer);
+                
+                return (
+                  <div key={transfer._id} className="flex justify-between items-center border-b border-gray-700 pb-4">
+                    <div>
+                      <p className="font-medium text-gray-300">
+                        {transfer.type === 'deposit' || transfer.description === 'Check/Cash Deposit' ? 'Money Order/Check' : 
+                          transfer.type === 'sent' ? `To: ${transfer.recipientEmail}` : 
+                          `From: ${transfer.senderEmail}`}
+                      </p>
+                      <p className="text-sm text-gray-500">{new Date(transfer.date).toLocaleDateString()}</p>
+                    </div>
+                    <span
+                      className={`font-medium ${
+                        transfer.type === 'deposit' || transfer.description === 'Check/Cash Deposit' ? 'text-green-500' :
+                        transfer.type === 'sent' ? 'text-red-500' : 
+                        'text-green-500'
+                      }`}
+                    >
+                      {transfer.type === 'sent' ? '-' : '+'}${transfer.amount.toFixed(2)}
+                    </span>
                   </div>
-                  <span
-                    className={`font-medium ${
-                      transfer.type === 'sent' ? 'text-red-500' : 'text-green-500'
-                    }`}
-                  >
-                    {transfer.type === 'sent' ? '-' : '+'}${transfer.amount.toFixed(2)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
               {recentTransfers.length === 0 && (
                 <p className="text-gray-400 text-center">No recent transfers</p>
               )}
