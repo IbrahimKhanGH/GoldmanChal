@@ -55,10 +55,51 @@ function Register() {
     setRegistrationStep(2);
   };
 
-  const handleFinalSubmit = (e) => {
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    navigate('/dashboard');
+    try {
+      // Add logging to debug
+      console.log('Sending registration data:', formData);
+
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          address: {
+            street1: formData.street1,
+            street2: formData.street2,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            country: formData.country,
+          }
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Store the token
+      localStorage.setItem('token', data.token);
+      console.log('Registration successful:', data);
+
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Registration error:', error);
+      // Add user feedback here
+      alert(error.message || 'Registration failed');
+    }
   };
 
   useEffect(() => {

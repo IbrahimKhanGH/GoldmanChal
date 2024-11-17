@@ -1,17 +1,55 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const authRoutes = require('./routes/auth');
 const multer = require('multer');
 const vision = require('@google-cloud/vision');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
 
 const app = express();
-const upload = multer();
+app.use(cors());
+app.use(express.json());
+
+const upload = multer({
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// MongoDB Connection with debug logging
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+  console.log('Database:', mongoose.connection.db.databaseName);
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+// Add this to log all MongoDB queries (remove in production)
+mongoose.set('debug', true);
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Initialize Vision client with credentials from env
-const visionClient = new vision.ImageAnnotatorClient({
-  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
-});
+let visionClient;
+try {
+  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  visionClient = new vision.ImageAnnotatorClient({
+    credentials
+  });
+} catch (error) {
+  console.error('Error parsing Google credentials:', error);
+  process.exit(1); // Exit if credentials are invalid
+}
 
 // Initialize Plaid client
 const configuration = new Configuration({
@@ -25,9 +63,6 @@ const configuration = new Configuration({
 });
 
 const plaidClient = new PlaidApi(configuration);
-
-app.use(cors());
-app.use(express.json());
 
 // Existing Plaid endpoints
 app.post('/api/create_link_token', async (req, res) => {
