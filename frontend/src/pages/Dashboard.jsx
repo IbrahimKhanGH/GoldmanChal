@@ -17,33 +17,53 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import QRScanner from '../components/QRScanner';
 import { Dialog } from '@headlessui/react';
-import CheckScanner from '../components/CheckScanner';
+import SendMoneyModal from '../components/SendMoneyModal';
+import { FaMoneyBillTransfer } from 'react-icons/fa6';
 
 function Dashboard() {
   const [showScanner, setShowScanner] = useState(false);
   const [scannerType, setScannerType] = useState(null); // 'cash' or 'check'
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [balance, setBalance] = useState(2459.50);
 
   const handleScan = async (result) => {
     try {
       console.log('Scanned:', result);
-      
-      // Create form data to handle the image
-      const formData = new FormData();
-      formData.append('type', 'check');
-      formData.append('amount', result.amount);
-      formData.append('image', result.image);
-
+      // Handle the scan result
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/deposit`, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: scannerType,
+          amount: result.amount,
+          code: result.code
+        }),
       });
       
       const data = await response.json();
       setShowScanner(false);
+      // Add success notification
       alert(`Successfully deposited $${result.amount}`);
     } catch (error) {
-      console.error('Error processing check:', error);
+      console.error('Error processing scan:', error);
       alert('Error processing deposit');
+    }
+  };
+
+  const handleSendMoney = (data) => {
+    const amount = parseFloat(data.amount);
+    if (amount <= balance) {
+      // Update the balance by subtracting the sent amount
+      setBalance(prevBalance => {
+        const newBalance = prevBalance - amount;
+        return Number(newBalance.toFixed(2)); // Ensure 2 decimal places
+      });
+      setIsModalOpen(false);
+      alert(`Successfully sent $${amount.toFixed(2)}`);
+    } else {
+      alert('Insufficient funds');
     }
   };
 
@@ -140,11 +160,14 @@ function Dashboard() {
             <span className="text-gray-300">Deposit Check</span>
           </button>
 
-          <button className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center"
+          >
             <div className="bg-purple-500/10 p-3 rounded-lg mb-2">
-              <ArrowUpIcon className="h-6 w-6 text-purple-500" />
+              <FaMoneyBillTransfer className="w-6 h-6 text-purple-600" />
             </div>
-            <span className="text-gray-300">Send Money</span>
+            <span className="text-sm font-medium text-white">Send Money</span>
           </button>
 
           <button className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center">
@@ -246,7 +269,7 @@ function Dashboard() {
         
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-sm rounded-xl bg-dark-200 p-6">
-            <CheckScanner 
+            <QRScanner 
               onScan={handleScan}
               type={scannerType}
             />
@@ -259,6 +282,14 @@ function Dashboard() {
           </Dialog.Panel>
         </div>
       </Dialog>
+
+      {/* Send Money Modal */}
+      <SendMoneyModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSend={handleSendMoney}
+        maxAmount={balance}
+      />
     </div>
   );
 }
