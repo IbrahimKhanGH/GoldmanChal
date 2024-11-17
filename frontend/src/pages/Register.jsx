@@ -188,6 +188,16 @@ function Register() {
               </p>
             </div>
           </div>
+
+          {/* Add Login Button */}
+          <div className="text-center mt-8">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              Already have an account? Login
+            </button>
+          </div>
         </div>
       </div>
     );
