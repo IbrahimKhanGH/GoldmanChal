@@ -18,12 +18,15 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import QRScanner from '../components/QRScanner';
 import { Dialog } from '@headlessui/react';
 import CheckScanner from '../components/CheckScanner';
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [showScanner, setShowScanner] = useState(false);
   const [scannerType, setScannerType] = useState(null); // 'cash' or 'check'
   const [balance, setBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [showSendMoney, setShowSendMoney] = useState(false);
 
   useEffect(() => {
     fetchBalance();
@@ -171,7 +174,10 @@ function Dashboard() {
             <span className="text-gray-300">Deposit Check</span>
           </button>
 
-          <button className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center">
+          <button 
+            onClick={() => navigate('/transfers')} 
+            className="bg-dark-200 hover:bg-dark-300 transition-colors p-4 rounded-xl flex flex-col items-center"
+          >
             <div className="bg-purple-500/10 p-3 rounded-lg mb-2">
               <ArrowUpIcon className="h-6 w-6 text-purple-500" />
             </div>
