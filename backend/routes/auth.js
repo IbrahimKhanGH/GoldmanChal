@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
 
 router.post('/register', async (req, res) => {
   try {
@@ -136,6 +137,33 @@ router.post('/create-test-user', async (req, res) => {
       message: 'Error creating test user',
       error: error.message 
     });
+  }
+});
+
+// Update the route to use auth middleware
+router.put('/update-saving-goal', auth, async (req, res) => {
+  try {
+    // Change this line to match how the ID is stored in the auth middleware
+    const userId = req.user.userId;
+    const { savingGoal } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { savingGoal },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      savingGoal: user.savingGoal
+    });
+  } catch (error) {
+    console.error('Update saving goal error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

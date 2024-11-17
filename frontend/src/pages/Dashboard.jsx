@@ -21,6 +21,7 @@ import QRScanner from '../components/QRScanner';
 import { Dialog } from '@headlessui/react';
 import CheckScanner from '../components/CheckScanner';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -35,6 +36,14 @@ function Dashboard() {
 
   useEffect(() => {
     fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData && userData.savingGoal) {
+      setGoalAmount(userData.savingGoal);
+      setTempGoalAmount(userData.savingGoal);
+    }
   }, []);
 
   const fetchBalance = async () => {
@@ -127,9 +136,32 @@ function Dashboard() {
     return null;
   };
 
-  const handleSaveGoal = () => {
-    setGoalAmount(tempGoalAmount);
-    setIsEditingGoal(false);
+  const handleSaveGoal = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/auth/update-saving-goal`,
+        {
+          savingGoal: tempGoalAmount
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setGoalAmount(tempGoalAmount);
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const updatedUserData = { ...userData, savingGoal: tempGoalAmount };
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        setIsEditingGoal(false);
+      }
+    } catch (error) {
+      console.error('Failed to update saving goal:', error);
+      // Add error handling here
+    }
   };
 
   return (
@@ -169,7 +201,7 @@ function Dashboard() {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-bold text-white">$8,500</p>
+                <p className="text-2xl font-bold text-white">{isLoading ? 'Loading...' : `$${balance.toFixed(2)}`}</p>
                 <p className="text-gray-400 text-sm">
                   of ${goalAmount.toLocaleString()}
                 </p>
