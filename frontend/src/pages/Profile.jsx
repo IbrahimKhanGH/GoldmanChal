@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UserCircleIcon,
   KeyIcon,
@@ -9,6 +9,16 @@ import {
 } from '@heroicons/react/24/outline';
 
 function Profile() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-dark-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -19,8 +29,12 @@ function Profile() {
               <UserCircleIcon className="h-16 w-16 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">John Doe</h2>
-              <p className="text-gray-400">john.doe@example.com</p>
+              <h2 className="text-2xl font-bold text-white">
+                {user ? `${user.firstName} ${user.lastName}` : 'Loading...'}
+              </h2>
+              <p className="text-gray-400">
+                {user ? user.email : 'Loading...'}
+              </p>
             </div>
           </div>
         </div>
