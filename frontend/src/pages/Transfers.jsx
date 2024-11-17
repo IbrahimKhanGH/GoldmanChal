@@ -144,7 +144,7 @@ function Transfers() {
           </div>
 
           {/* Right Column: Recent Transfers */}
-          <div className="bg-white bg-opacity-10 rounded-lg shadow-lg p-6 backdrop-blur-md h-fit overflow-y-auto" style={{ maxHeight: '568px' }}>
+          <div className="bg-white bg-opacity-10 rounded-lg shadow-lg p-6 backdrop-blur-md h-fit overflow-y-auto" style={{ maxHeight: '505px' }}>
             <h2 className="text-2xl font-semibold mb-6 text-gray-100">Recent Transfers</h2>
             <div className="space-y-4">
               {recentTransfers.map((transfer) => {
