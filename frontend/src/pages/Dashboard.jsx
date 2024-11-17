@@ -14,12 +14,14 @@ import {
   PhoneIcon,
   DocumentIcon,
   CalculatorIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import QRScanner from '../components/QRScanner';
 import { Dialog } from '@headlessui/react';
 import CheckScanner from '../components/CheckScanner';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -28,9 +30,20 @@ function Dashboard() {
   const [balance, setBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showSendMoney, setShowSendMoney] = useState(false);
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [goalAmount, setGoalAmount] = useState(10000);
+  const [tempGoalAmount, setTempGoalAmount] = useState(goalAmount);
 
   useEffect(() => {
     fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData && userData.savingGoal) {
+      setGoalAmount(userData.savingGoal);
+      setTempGoalAmount(userData.savingGoal);
+    }
   }, []);
 
   const fetchBalance = async () => {
@@ -123,6 +136,34 @@ function Dashboard() {
     return null;
   };
 
+  const handleSaveGoal = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/auth/update-saving-goal`,
+        {
+          savingGoal: tempGoalAmount
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setGoalAmount(tempGoalAmount);
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const updatedUserData = { ...userData, savingGoal: tempGoalAmount };
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        setIsEditingGoal(false);
+      }
+    } catch (error) {
+      console.error('Failed to update saving goal:', error);
+      // Add error handling here
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -146,14 +187,32 @@ function Dashboard() {
           
           {/* Savings Goal */}
           <div className="bg-dark-200 rounded-2xl p-6">
-            <h3 className="text-white font-semibold mb-2">Savings Goal</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-white font-semibold">Savings Goal</h3>
+              <button 
+                onClick={() => {
+                  setTempGoalAmount(goalAmount);
+                  setIsEditingGoal(true);
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <PencilIcon className="h-5 w-5" />
+              </button>
+            </div>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-bold text-white">$8,500</p>
-                <p className="text-gray-400 text-sm">of $10,000</p>
+                <p className="text-2xl font-bold text-white">{isLoading ? 'Loading...' : `$${balance.toFixed(2)}`}</p>
+                <p className="text-gray-400 text-sm">
+                  of ${goalAmount.toLocaleString()}
+                </p>
               </div>
               <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
-                <div className="w-4/5 h-full bg-green-500"></div>
+                <div 
+                  className="h-full bg-green-500"
+                  style={{ 
+                    width: `${(8500 / goalAmount) * 100}%`
+                  }}
+                ></div>
               </div>
             </div>
           </div>
@@ -309,6 +368,61 @@ function Dashboard() {
             >
               Cancel
             </button>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Edit Goal Modal */}
+      <Dialog
+        open={isEditingGoal}
+        onClose={() => setIsEditingGoal(false)}
+        className="relative z-50"
+      >
+        {/* The backdrop, rendered as a fixed sibling to the panel container */}
+        <div className="fixed inset-0 bg-black/75" aria-hidden="true" />
+
+        {/* Full-screen container to center the panel */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="mx-auto max-w-sm w-full rounded-2xl bg-dark-200 p-6">
+            <Dialog.Title className="text-xl font-semibold text-white mb-4">
+              Edit Savings Goal
+            </Dialog.Title>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-400 text-sm mb-2">
+                  Goal Amount
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    value={tempGoalAmount}
+                    onChange={(e) => setTempGoalAmount(Number(e.target.value))}
+                    className="w-full bg-dark-300 text-white rounded-lg pl-8 pr-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+                    placeholder="Enter amount"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setIsEditingGoal(false)}
+                  className="flex-1 bg-dark-300 text-white py-2 rounded-lg hover:bg-dark-400 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveGoal}
+                  className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
           </Dialog.Panel>
         </div>
       </Dialog>

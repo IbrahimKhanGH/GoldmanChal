@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  savingGoal: {
+    type: Number,
+    default: 10000
+  },
   phone: {
     type: String,
     required: true
