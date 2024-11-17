@@ -72,7 +72,7 @@ function QRScanner({ onScan, type }) {
   return (
     <div className="bg-dark-200 p-4 rounded-xl">
       <h3 className="text-white text-xl font-semibold mb-4">
-        {type === 'cash' ? 'Scan Vendor QR Code' : 'Scan Check'}
+        {type === 'cash' ? 'Scan Money Order' : 'Scan Check'}
       </h3>
       
       <div id="reader" className="max-w-sm mx-auto"></div>

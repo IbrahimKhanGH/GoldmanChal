@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, NavLink } from 'react-router-dom';
 import {
   HomeIcon,
   ArrowsRightLeftIcon,
   UserCircleIcon,
   Bars3Icon,
+  CalculatorIcon,
 } from '@heroicons/react/24/outline';
 
 function Navbar() {
@@ -51,6 +52,18 @@ function Navbar() {
                 <UserCircleIcon className="h-5 w-5" />
                 <span>Profile</span>
               </Link>
+
+              <NavLink 
+                to="/budgeting" 
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-2 text-gray-300 hover:bg-dark-300 rounded-lg ${
+                    isActive ? 'bg-dark-300' : ''
+                  }`
+                }
+              >
+                <CalculatorIcon className="h-5 w-5 mr-2" />
+                <span>Budgeting</span>
+              </NavLink>
             </div>
           </div>
 

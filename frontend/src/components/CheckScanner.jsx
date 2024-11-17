@@ -1,19 +1,17 @@
-import React, { useState, useRef, useCallback } from 'react';
-import Webcam from 'react-webcam';
+import React, { useState, useRef, useCallback } from "react";
+import Webcam from "react-webcam";
 
-function CheckScanner({ onScan }) {
+function CheckScanner({ onScan, type }) {
   const [mode, setMode] = useState(null);
-  const [step, setStep] = useState('select');
+  const [step, setStep] = useState("select");
   const [capturedImage, setCapturedImage] = useState(null);
   const [amount, setAmount] = useState(null);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [videoConstraints, setVideoConstraints] = useState({
-    width: 720,
-    height: 480,
-    facingMode: "user"
-  });
-  
+  const [confidenceScore, setConfidenceScore] = useState(null);
+  const [isValid, setIsValid] = useState(false);
+  const [manualOverride, setManualOverride] = useState(false);
+
   const webcamRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -24,7 +22,7 @@ function CheckScanner({ onScan }) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setCapturedImage(reader.result);
-        setStep('preview');
+        setStep("preview");
       };
       reader.readAsDataURL(file);
     }
@@ -36,7 +34,7 @@ function CheckScanner({ onScan }) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
         setCapturedImage(imageSrc);
-        setStep('preview');
+        setStep("preview");
       }
     }
   }, [webcamRef]);
@@ -47,15 +45,12 @@ function CheckScanner({ onScan }) {
     setError(null);
 
     try {
-      // Convert base64 to blob
       const response = await fetch(capturedImage);
       const blob = await response.blob();
       
-      // Create form data
       const formData = new FormData();
       formData.append('image', blob, 'check.jpg');
 
-      // Send to backend for processing
       const result = await fetch(`${process.env.REACT_APP_API_URL}/api/scan-check`, {
         method: 'POST',
         body: formData
@@ -67,15 +62,23 @@ function CheckScanner({ onScan }) {
         throw new Error(data.error);
       }
 
-      // Set a default amount if detection fails
+      setConfidenceScore(data.confidenceScore);
+
+      if (!data.isValid) {
+        setError(`Check validation failed (Confidence: ${data.confidenceScore.toFixed(1)}%). Please try again.`);
+        setStep('select');
+        return;
+      }
+
+      // Set amount and move to confirm step
       const detectedAmount = findAmount(data.text) || 0;
       setAmount(detectedAmount);
       setStep('confirm');
+      
     } catch (err) {
       console.error('Processing error:', err);
-      // Don't throw error, just move to manual amount entry
-      setAmount(0);
-      setStep('confirm');
+      setError('Failed to process check. Please try again.');
+      setStep('select');
     } finally {
       setProcessing(false);
     }
@@ -84,28 +87,41 @@ function CheckScanner({ onScan }) {
   // Handle amount confirmation
   const handleConfirm = () => {
     if (!amount || amount <= 0) {
-      setError('Please enter a valid amount');
+      setError("Please enter a valid amount");
       return;
     }
 
     onScan({
       amount: parseFloat(amount),
-      image: capturedImage
+      image: capturedImage,
+      confidence: confidenceScore,
+      isValid,
     });
+
+    // Reset the scanner after successful scan
+    setMode(null);
+    setStep("select");
+    setCapturedImage(null);
+    setAmount(null);
+    setConfidenceScore(null);
+    setIsValid(false);
+    setManualOverride(false);
+    setError(null);
   };
 
   // Helper function to find amount in text
   const findAmount = (text) => {
     const patterns = [
-      /\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/,  // Matches $123.45
-      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*dollars/i,  // Matches 123.45 dollars
-      /(?:amount|pay|sum of)[^\$]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,  // Matches amount: $123.45
+      /\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/, // e.g., $1,234.56
+      /(?:Amount|Payee|Pay to the order of)[^\$]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i, // e.g., Payee: $123.45
+      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*dollars/i, // e.g., 123.45 dollars
+      /amount\s*[:\-]?\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i, // e.g., Amount: $123.45
     ];
 
     for (let pattern of patterns) {
       const match = text.match(pattern);
       if (match && match[1]) {
-        return parseFloat(match[1].replace(/,/g, ''));
+        return parseFloat(match[1].replace(/,/g, ""));
       }
     }
     return null;
@@ -114,9 +130,9 @@ function CheckScanner({ onScan }) {
   // Camera component
   const CameraComponent = () => {
     const handleUserMediaError = useCallback((err) => {
-      console.error('Camera Error:', err);
-      setError('Camera access denied. Please check your camera permissions.');
-      setStep('select');
+      console.error("Camera Error:", err);
+      setError("Camera access denied. Please check your camera permissions.");
+      setStep("select");
     }, []);
 
     return (
@@ -125,16 +141,20 @@ function CheckScanner({ onScan }) {
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
-          videoConstraints={videoConstraints}
+          videoConstraints={{
+            width: 720,
+            height: 480,
+            facingMode: "environment", // Use the environment (rear) camera if available
+          }}
           className="w-full rounded-lg"
           onUserMediaError={handleUserMediaError}
         />
-        
+
         <div className="flex gap-2 mt-4">
           <button
             onClick={() => {
               setMode(null);
-              setStep('select');
+              setStep("select");
             }}
             className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
           >
@@ -153,32 +173,51 @@ function CheckScanner({ onScan }) {
 
   return (
     <div className="bg-dark-200 p-4 rounded-xl">
+      <h3 className="text-white text-xl font-semibold mb-4">
+        {type === 'cash' ? 'Scan Money Order' : 'Scan Check'}
+      </h3>
+
+      {confidenceScore !== null && (
+        <div className={`mb-4 p-3 rounded-lg ${
+          confidenceScore >= 50 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+        }`}>
+          <p className="text-lg font-semibold">
+            Confidence Score: {confidenceScore.toFixed(1)}%
+            {confidenceScore >= 50 ? ' ✓' : ' ✗'}
+          </p>
+        </div>
+      )}
+
       <input
         type="file"
         ref={fileInputRef}
         accept="image/*"
         onChange={handleFileUpload}
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       />
 
-      {step === 'select' && (
+      {step === "select" && (
         <div className="space-y-4">
           <button
             onClick={() => {
-              if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setError('Camera not supported in this browser');
+              if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia
+              ) {
+                setError("Camera not supported in this browser");
                 return;
               }
-              
-              navigator.mediaDevices.getUserMedia({ video: true })
+
+              navigator.mediaDevices
+                .getUserMedia({ video: true })
                 .then(() => {
-                  setMode('camera');
-                  setStep('capture');
+                  setMode("camera");
+                  setStep("capture");
                   setError(null);
                 })
-                .catch(err => {
-                  console.error('Camera permission error:', err);
-                  setError('Please allow camera access to use this feature');
+                .catch((err) => {
+                  console.error("Camera permission error:", err);
+                  setError("Please allow camera access to use this feature");
                 });
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -195,14 +234,18 @@ function CheckScanner({ onScan }) {
         </div>
       )}
 
-      {mode === 'camera' && step === 'capture' && <CameraComponent />}
+      {mode === "camera" && step === "capture" && <CameraComponent />}
 
-      {step === 'preview' && (
+      {step === "preview" && (
         <div>
-          <img src={capturedImage} alt="Captured check" className="w-full rounded-lg" />
+          <img
+            src={capturedImage}
+            alt="Captured check"
+            className="w-full rounded-lg"
+          />
           <div className="flex gap-2 mt-4">
             <button
-              onClick={() => setStep('select')}
+              onClick={() => setStep("select")}
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
             >
               Try Again
@@ -212,32 +255,40 @@ function CheckScanner({ onScan }) {
               disabled={processing}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              {processing ? 'Processing...' : 'Process Check'}
+              {processing ? "Processing..." : "Process Check"}
             </button>
           </div>
         </div>
       )}
 
-      {step === 'confirm' && (
+      {step === "confirm" && (
         <div className="text-center">
-          <p className="text-xl mb-4">
-            Detected Amount: ${amount?.toFixed(2)}
-          </p>
+          <p className="text-xl mb-4">Detected Amount: ${amount?.toFixed(2)}</p>
           <input
             type="number"
-            value={amount || ''}
+            value={amount || ""}
             onChange={(e) => setAmount(parseFloat(e.target.value))}
             className="w-full p-2 mb-4 rounded"
             step="0.01"
             min="0"
             placeholder="Enter or correct amount"
           />
-          <button
-            onClick={handleConfirm}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Confirm & Deposit
-          </button>
+          {!isValid && !manualOverride && (
+            <button
+              onClick={() => setManualOverride(true)}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded mb-2"
+            >
+              Manually Confirm
+            </button>
+          )}
+          {(!isValid || manualOverride) && (
+            <button
+              onClick={handleConfirm}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Confirm & Deposit
+            </button>
+          )}
         </div>
       )}
 
@@ -250,4 +301,4 @@ function CheckScanner({ onScan }) {
   );
 }
 
-export default CheckScanner; 
+export default CheckScanner;
