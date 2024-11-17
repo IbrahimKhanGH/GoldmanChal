@@ -33,16 +33,18 @@ function Dashboard() {
         },
         body: JSON.stringify({
           type: scannerType,
-          data: result,
+          amount: result.amount,
+          code: result.code
         }),
       });
       
       const data = await response.json();
       setShowScanner(false);
-      // Add success notification here
+      // Add success notification
+      alert(`Successfully deposited $${result.amount}`);
     } catch (error) {
       console.error('Error processing scan:', error);
-      // Add error notification here
+      alert('Error processing deposit');
     }
   };
 
