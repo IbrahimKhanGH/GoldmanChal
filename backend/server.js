@@ -9,6 +9,7 @@ const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
 const accountRoutes = require('./routes/accounts');
 const transactionRoutes = require('./routes/transactions');
 const chatRoutes = require('./routes/chat');
+const depositRoutes = require('./routes/deposits');
 
 const app = express();
 app.use(cors());
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api', depositRoutes);
 
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is running' });

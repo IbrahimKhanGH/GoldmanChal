@@ -14,7 +14,7 @@ router.post("/transfer", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid transfer details" });
     }
 
-    const sender = await User.findById(req.user.userId);
+    const sender = await User.findById(req.user.id);
     const recipient = await User.findOne({ email: recipientEmail });
 
     if (!sender || !recipient) {
@@ -80,7 +80,7 @@ router.post("/transfer", auth, async (req, res) => {
 // Get recent transfers
 router.get("/transfers", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -113,7 +113,7 @@ router.post("/deposit", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid deposit amount" });
     }
 
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

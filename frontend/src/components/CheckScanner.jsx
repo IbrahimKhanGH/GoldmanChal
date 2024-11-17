@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
+import axios from "axios";
 
 function CheckScanner({ onScan, type }) {
   const [mode, setMode] = useState(null);
@@ -11,6 +12,9 @@ function CheckScanner({ onScan, type }) {
   const [confidenceScore, setConfidenceScore] = useState(null);
   const [isValid, setIsValid] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [documentType, setDocumentType] = useState(type);
+  const [serialNumber, setSerialNumber] = useState('');
 
   const webcamRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -50,13 +54,38 @@ function CheckScanner({ onScan, type }) {
       
       const formData = new FormData();
       formData.append('image', blob, 'check.jpg');
+      formData.append('type', documentType);
 
-      const result = await fetch(`${process.env.REACT_APP_API_URL}/api/scan-check`, {
+      // First, check for duplicates
+      const result = await fetch(`${process.env.REACT_APP_API_URL}/api/check-duplicate`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
         body: formData
       });
 
-      const data = await result.json();
+      if (!result.ok) {
+        const errorData = await result.json();
+        throw new Error(errorData.error || 'Failed to check for duplicates');
+      }
+
+      const duplicateCheck = await result.json();
+      
+      if (duplicateCheck.isDuplicate) {
+        throw new Error(`This ${documentType} has already been deposited on ${new Date(duplicateCheck.originalDate).toLocaleDateString()} for $${duplicateCheck.amount.toFixed(2)}`);
+      }
+
+      // If not duplicate, proceed with OCR scanning
+      const scanResult = await fetch(`${process.env.REACT_APP_API_URL}/api/scan-check`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData
+      });
+
+      const data = await scanResult.json();
       
       if (data.error) {
         throw new Error(data.error);
@@ -70,14 +99,13 @@ function CheckScanner({ onScan, type }) {
         return;
       }
 
-      // Set amount and move to confirm step
       const detectedAmount = findAmount(data.text) || 0;
       setAmount(detectedAmount);
       setStep('confirm');
       
     } catch (err) {
       console.error('Processing error:', err);
-      setError('Failed to process check. Please try again.');
+      setError(err.message || 'Failed to process check. Please try again.');
       setStep('select');
     } finally {
       setProcessing(false);
@@ -169,6 +197,81 @@ function CheckScanner({ onScan, type }) {
         </div>
       </div>
     );
+  };
+
+  // Handle scan success
+  const onSuccess = (data) => {
+    onScan({
+      amount: parseFloat(amount),
+      image: capturedImage,
+      confidence: confidenceScore,
+      isValid,
+      depositId: data.depositId
+    });
+  };
+
+  // Update handleScan function
+  const handleScan = async (imageData) => {
+    try {
+      setIsScanning(true);
+      const formData = new FormData();
+      formData.append('image', imageData);
+      formData.append('type', documentType);
+      formData.append('amount', amount);
+      if (documentType === 'money_order') {
+        formData.append('serialNumber', serialNumber);
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/deposits/scan-check`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        onSuccess(response.data);
+      }
+    } catch (error) {
+      if (error.response?.data?.error === 'Duplicate deposit detected') {
+        const details = error.response.data.details;
+        setError(
+          `This ${documentType} has already been deposited on ` +
+          `${new Date(details.originalDepositDate).toLocaleDateString()} ` +
+          `for $${details.originalAmount.toFixed(2)}`
+        );
+        setStep('select'); // Reset to selection step
+      } else {
+        setError('Error processing scan. Please try again.');
+      }
+      console.error('Scan error:', error);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  // Add serial number input if it's a money order
+  const renderSerialNumberInput = () => {
+    if (type === 'money_order' && step === 'confirm') {
+      return (
+        <div className="mb-4">
+          <label className="block text-gray-300 mb-2">Serial Number</label>
+          <input
+            type="text"
+            value={serialNumber}
+            onChange={(e) => setSerialNumber(e.target.value)}
+            className="w-full p-2 rounded"
+            placeholder="Enter serial number"
+            required
+          />
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -273,22 +376,13 @@ function CheckScanner({ onScan, type }) {
             min="0"
             placeholder="Enter or correct amount"
           />
-          {!isValid && !manualOverride && (
-            <button
-              onClick={() => setManualOverride(true)}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded mb-2"
-            >
-              Manually Confirm
-            </button>
-          )}
-          {(!isValid || manualOverride) && (
-            <button
-              onClick={handleConfirm}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Confirm & Deposit
-            </button>
-          )}
+          {renderSerialNumberInput()}
+          <button
+            onClick={handleConfirm}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Confirm & Deposit
+          </button>
         </div>
       )}
 
