@@ -46,9 +46,11 @@ try {
   visionClient = new vision.ImageAnnotatorClient({
     credentials
   });
+  console.log('Vision client initialized successfully');
 } catch (error) {
-  console.error('Error parsing Google credentials:', error);
-  process.exit(1); // Exit if credentials are invalid
+  console.error('Error initializing Vision client:', error);
+  // In production, you might want to handle this differently
+  process.exit(1);
 }
 
 // Initialize Plaid client
