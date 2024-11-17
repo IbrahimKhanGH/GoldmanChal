@@ -53,17 +53,13 @@ function Navbar() {
                 <span>Profile</span>
               </Link>
 
-              <NavLink 
-                to="/budgeting" 
-                className={({ isActive }) =>
-                  `flex items-center px-4 py-2 text-gray-300 hover:bg-dark-300 rounded-lg ${
-                    isActive ? 'bg-dark-300' : ''
-                  }`
-                }
+              <Link
+                to="/budgeting"
+                className={`flex items-center space-x-2 ${isActive('/budgeting')} transition-colors duration-200`}
               >
-                <CalculatorIcon className="h-5 w-5 mr-2" />
+                <CalculatorIcon className="h-5 w-5" />
                 <span>Budgeting</span>
-              </NavLink>
+              </Link>
             </div>
           </div>
 
