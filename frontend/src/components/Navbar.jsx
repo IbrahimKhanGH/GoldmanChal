@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   HomeIcon,
-  CreditCardIcon,
   ArrowsRightLeftIcon,
   UserCircleIcon,
   Bars3Icon,
@@ -16,7 +15,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-[#1a1a1a] border-b border-gray-800">
+    <nav className="bg-dark-200 border-b border-dark-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -35,14 +34,6 @@ function Navbar() {
               >
                 <HomeIcon className="h-5 w-5" />
                 <span>Dashboard</span>
-              </Link>
-
-              <Link
-                to="/cards"
-                className={`flex items-center space-x-2 ${isActive('/cards')} transition-colors duration-200`}
-              >
-                <CreditCardIcon className="h-5 w-5" />
-                <span>Cards</span>
               </Link>
 
               <Link
