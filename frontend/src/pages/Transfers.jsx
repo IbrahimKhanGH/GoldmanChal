@@ -84,8 +84,8 @@ function Transfers() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900 text-white">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-primary to-gray-900 text-white overflow-hidden">
+      <div className="container mx-auto px-4 py-8 max-h-screen overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: Balance and Transfer Form */}
           <div className="space-y-8">
@@ -144,7 +144,7 @@ function Transfers() {
           </div>
 
           {/* Right Column: Recent Transfers */}
-          <div className="bg-white bg-opacity-10 rounded-lg shadow-lg p-6 backdrop-blur-md h-fit">
+          <div className="bg-white bg-opacity-10 rounded-lg shadow-lg p-6 backdrop-blur-md h-fit overflow-y-auto" style={{ maxHeight: '568px' }}>
             <h2 className="text-2xl font-semibold mb-6 text-gray-100">Recent Transfers</h2>
             <div className="space-y-4">
               {recentTransfers.map((transfer) => {
