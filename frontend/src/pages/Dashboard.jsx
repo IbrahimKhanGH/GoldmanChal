@@ -230,7 +230,10 @@ function Dashboard() {
             <div className="bg-green-500/10 p-3 rounded-lg mb-2">
               <BanknotesIcon className="h-6 w-6 text-green-500" />
             </div>
-            <span className="text-gray-300">Deposit Money Order</span>
+            <span className="text-gray-300 font-medium">Deposit Money Order</span>
+            <p className="text-gray-400 text-sm mt-1 text-center">
+              Quickly deposit money orders using your camera
+            </p>
           </button>
 
           <button 
@@ -243,7 +246,10 @@ function Dashboard() {
             <div className="bg-blue-500/10 p-3 rounded-lg mb-2">
               <DocumentIcon className="h-6 w-6 text-blue-500" />
             </div>
-            <span className="text-gray-300">Deposit Check</span>
+            <span className="text-gray-300 font-medium">Deposit Check</span>
+            <p className="text-gray-400 text-sm mt-1 text-center">
+              Deposit checks instantly with your phone
+            </p>
           </button>
 
           <button 
@@ -253,7 +259,10 @@ function Dashboard() {
             <div className="bg-purple-500/10 p-3 rounded-lg mb-2">
               <ArrowUpIcon className="h-6 w-6 text-purple-500" />
             </div>
-            <span className="text-gray-300">Send Money</span>
+            <span className="text-gray-300 font-medium">Send Money</span>
+            <p className="text-gray-400 text-sm mt-1 text-center">
+              Transfer funds to friends and family
+            </p>
           </button>
 
           <button 
@@ -263,7 +272,10 @@ function Dashboard() {
             <div className="bg-orange-500/10 p-3 rounded-lg mb-2">
               <CalculatorIcon className="h-6 w-6 text-orange-500" />
             </div>
-            <span className="text-gray-300">Budgeting</span>
+            <span className="text-gray-300 font-medium">Budgeting</span>
+            <p className="text-gray-400 text-sm mt-1 text-center">
+              Track and manage your expenses
+            </p>
           </button>
         </div>
 

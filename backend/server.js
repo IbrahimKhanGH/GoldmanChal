@@ -8,6 +8,7 @@ const vision = require('@google-cloud/vision');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
 const accountRoutes = require('./routes/accounts');
 const transactionRoutes = require('./routes/transactions');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 app.use(cors());
@@ -49,6 +50,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is running' });

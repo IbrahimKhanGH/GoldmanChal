@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import AuthenticatedLayout from './layouts/AuthenticatedLayout';
 import SplashPage from './pages/SplashPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -14,26 +14,35 @@ import Scan from './pages/Scan';
 import Budgeting from './pages/Budgeting';
 
 function AppContent() {
-  const location = useLocation();
-  const showNavbar = !['/login', '/register', '/'].includes(location.pathname);
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      {showNavbar && <Navbar />}
-      <Routes>
-        <Route path="/" element={<SplashPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/savings" element={<Savings />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/transfers" element={<Transfers />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/scan" element={<Scan />} />
-        <Route path="/budgeting" element={<Budgeting />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<SplashPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      {/* Authenticated Routes */}
+      <Route path="/dashboard" element={
+        <AuthenticatedLayout>
+          <Dashboard />
+        </AuthenticatedLayout>
+      } />
+      <Route path="/transfers" element={
+        <AuthenticatedLayout>
+          <Transfers />
+        </AuthenticatedLayout>
+      } />
+      <Route path="/budgeting" element={
+        <AuthenticatedLayout>
+          <Budgeting />
+        </AuthenticatedLayout>
+      } />
+      <Route path="/profile" element={
+        <AuthenticatedLayout>
+          <Profile />
+        </AuthenticatedLayout>
+      } />
+      {/* Add other authenticated routes similarly */}
+    </Routes>
   );
 }
 
