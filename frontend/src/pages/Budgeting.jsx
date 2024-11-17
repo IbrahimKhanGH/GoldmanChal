@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 
+// Add this helper function at the top of your component or in a utils file
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+};
+
 function Budgeting() {
   const [totalIncome, setTotalIncome] = useState(0);
   const [budgets, setBudgets] = useState([
@@ -75,16 +85,20 @@ function Budgeting() {
         {/* Overview Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-dark-200 rounded-xl p-6">
-            <h3 className="text-gray-400 text-sm mb-2">Total Balance</h3>
-            <p className="text-2xl font-bold text-white">${totalIncome.toFixed(2)}</p>
+            <h3 className="text-gray-400 text-sm mb-2">Total Income</h3>
+            <p className="text-2xl font-bold text-white">{formatCurrency(totalIncome)}</p>
           </div>
           <div className="bg-dark-200 rounded-xl p-6">
             <h3 className="text-gray-400 text-sm mb-2">Allocated</h3>
-            <p className="text-2xl font-bold text-white">${(totalIncome * (totalPercentage / 100)).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-white">
+              {formatCurrency(totalIncome * (totalPercentage / 100))}
+            </p>
           </div>
           <div className="bg-dark-200 rounded-xl p-6">
             <h3 className="text-gray-400 text-sm mb-2">Unallocated</h3>
-            <p className="text-2xl font-bold text-white">${(totalIncome * (remainingPercentage / 100)).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-white">
+              {formatCurrency(totalIncome * (remainingPercentage / 100))}
+            </p>
           </div>
         </div>
 
@@ -114,7 +128,7 @@ function Budgeting() {
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-white font-medium">{budget.name}</h3>
                     <span className="text-gray-400">
-                      ${(totalIncome * (budget.percentage / 100)).toFixed(2)}
+                      {formatCurrency(totalIncome * (budget.percentage / 100))}
                     </span>
                   </div>
                   <input

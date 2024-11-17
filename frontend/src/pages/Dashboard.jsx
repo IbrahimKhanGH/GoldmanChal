@@ -134,7 +134,7 @@ function Dashboard() {
               <div>
                 <p className="text-white/80 text-sm">Total Balance</p>
                 <h2 className="text-3xl font-bold text-white mt-1">
-                  {isLoading ? 'Loading...' : `$${balance.toFixed(2)}`}
+                  {isLoading ? 'Loading...' : `$${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 </h2>
                 <p className="text-white/60 text-sm mt-2">+15.3% from last month</p>
               </div>
