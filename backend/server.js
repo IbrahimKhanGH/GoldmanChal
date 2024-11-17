@@ -7,6 +7,7 @@ const multer = require('multer');
 const vision = require('@google-cloud/vision');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
 const accountRoutes = require('./routes/accounts');
+const transactionRoutes = require('./routes/transactions');
 
 const app = express();
 app.use(cors());
@@ -39,13 +40,14 @@ mongoose.set('debug', true);
 
 // Debug middleware to log all requests
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`, req.body);
+  console.log(`${req.method} ${req.path}`, req.body);
   next();
 });
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 
 app.get('/test', (req, res) => {

@@ -1,112 +1,86 @@
 import React, { useState } from 'react';
-import { QrCodeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import { DocumentTextIcon } from '@heroicons/react/24/outline';
 
 function Scan() {
-  const [scanType, setScanType] = useState(null);
-  const navigate = useNavigate();
+  const [amount, setAmount] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [message, setMessage] = useState('');
 
-  // Mock function for handling scans
-  const handleScan = (type) => {
-    // In a real app, this would open the camera
-    console.log(`Scanning ${type}...`);
-    // Mock successful scan
-    setTimeout(() => {
-      navigate('/wallet');
-    }, 2000);
+  const handleDeposit = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    setMessage('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/transactions/deposit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: parseFloat(amount) })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('Deposit successful!');
+        setAmount('');
+        // You might want to trigger a balance refresh in the parent component
+      } else {
+        setMessage(data.message || 'Deposit failed');
+      }
+    } catch (error) {
+      console.error('Deposit error:', error);
+      setMessage('Error processing deposit');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Scan & Deposit</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* QR Code Scanner */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <QrCodeIcon className="h-8 w-8 text-blue-600" />
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <DocumentTextIcon className="h-8 w-8 text-green-600" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Deposit Check</h2>
+          <p className="text-gray-600 text-center mb-4">
+            Enter the amount on your check to deposit
+          </p>
+
+          <form onSubmit={handleDeposit} className="w-full">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Amount ($)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Scan QR Code</h2>
-            <p className="text-gray-600 text-center mb-4">
-              Scan QR codes from trusted vendors to add funds to your wallet
-            </p>
+
+            {message && (
+              <div className={`mb-4 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                {message}
+              </div>
+            )}
+
             <button
-              onClick={() => handleScan('qr')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              type="submit"
+              disabled={isProcessing}
+              className="w-full bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
             >
-              Open Scanner
+              {isProcessing ? 'Processing...' : 'Deposit Check'}
             </button>
-          </div>
-        </div>
-
-        {/* Check Scanner */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <DocumentTextIcon className="h-8 w-8 text-green-600" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Deposit Check</h2>
-            <p className="text-gray-600 text-center mb-4">
-              Scan and deposit checks directly to your digital wallet
-            </p>
-            <button
-              onClick={() => handleScan('check')}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Scan Check
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Trusted Vendors Section */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Trusted Cash Deposit Locations</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { name: 'Local Mart', distance: '0.5 miles', status: 'Open' },
-            { name: 'Quick Shop', distance: '1.2 miles', status: 'Open' },
-            { name: 'City Store', distance: '1.8 miles', status: 'Closed' },
-          ].map((vendor) => (
-            <div key={vendor.name} className="bg-white rounded-lg shadow p-4">
-              <h3 className="font-semibold">{vendor.name}</h3>
-              <p className="text-sm text-gray-600">{vendor.distance} away</p>
-              <span className={`text-sm ${
-                vendor.status === 'Open' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {vendor.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">How It Works</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl font-bold">1</span>
-            </div>
-            <h3 className="font-semibold mb-2">Visit Vendor</h3>
-            <p className="text-gray-600">Go to any trusted vendor location</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl font-bold">2</span>
-            </div>
-            <h3 className="font-semibold mb-2">Pay Cash</h3>
-            <p className="text-gray-600">Pay cash to the vendor</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl font-bold">3</span>
-            </div>
-            <h3 className="font-semibold mb-2">Receive Funds</h3>
-            <p className="text-gray-600">Receive funds in your digital wallet</p>
-          </div>
+          </form>
         </div>
       </div>
     </div>

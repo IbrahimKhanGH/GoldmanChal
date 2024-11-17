@@ -55,28 +55,40 @@ function Dashboard() {
       setIsLoading(false);
     }
   };
-
+  
   const handleScan = async (result) => {
     try {
-      console.log('Scanned:', result);
+      console.log('Attempting deposit with:', result);
+      const token = localStorage.getItem('token');
       
-      // Create form data to handle the image
-      const formData = new FormData();
-      formData.append('type', 'check');
-      formData.append('amount', result.amount);
-      formData.append('image', result.image);
-
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/deposit`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/transactions/deposit`, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          amount: parseFloat(result.amount)
+        })
       });
+
+      console.log('Response status:', response.status);
       
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(errorText || 'Deposit failed');
+      }
+
       const data = await response.json();
+      console.log('Deposit successful:', data);
+      
       setShowScanner(false);
+      fetchBalance(); // Refresh the balance
       alert(`Successfully deposited $${result.amount}`);
     } catch (error) {
       console.error('Error processing check:', error);
-      alert('Error processing deposit');
+      alert('Error processing deposit: ' + error.message);
     }
   };
 

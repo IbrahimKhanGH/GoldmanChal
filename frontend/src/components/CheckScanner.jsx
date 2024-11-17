@@ -56,7 +56,7 @@ function CheckScanner({ onScan }) {
       formData.append('image', blob, 'check.jpg');
 
       // Send to backend for processing
-      const result = await fetch('http://localhost:5000/api/scan-check', {
+      const result = await fetch(`${process.env.REACT_APP_API_URL}/api/scan-check`, {
         method: 'POST',
         body: formData
       });
@@ -67,17 +67,15 @@ function CheckScanner({ onScan }) {
         throw new Error(data.error);
       }
 
-      // Find amount in the detected text
-      const detectedAmount = findAmount(data.text);
-      if (!detectedAmount) {
-        throw new Error('Could not detect check amount');
-      }
-
+      // Set a default amount if detection fails
+      const detectedAmount = findAmount(data.text) || 0;
       setAmount(detectedAmount);
       setStep('confirm');
     } catch (err) {
       console.error('Processing error:', err);
-      setError(err.message || 'Error processing check');
+      // Don't throw error, just move to manual amount entry
+      setAmount(0);
+      setStep('confirm');
     } finally {
       setProcessing(false);
     }
@@ -85,15 +83,15 @@ function CheckScanner({ onScan }) {
 
   // Handle amount confirmation
   const handleConfirm = () => {
-    if (!amount || isNaN(amount)) {
+    if (!amount || amount <= 0) {
       setError('Please enter a valid amount');
       return;
     }
-    onScan({ amount: parseFloat(amount), image: capturedImage });
-    // Reset the form
-    setCapturedImage(null);
-    setAmount(null);
-    setStep('select');
+
+    onScan({
+      amount: parseFloat(amount),
+      image: capturedImage
+    });
   };
 
   // Helper function to find amount in text
