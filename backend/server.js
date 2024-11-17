@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const multer = require('multer');
 const vision = require('@google-cloud/vision');
 const { Configuration, PlaidApi, PlaidEnvironments } = require('plaid');
+const accountRoutes = require('./routes/accounts');
 
 const app = express();
 app.use(cors());
@@ -36,8 +37,20 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Add this to log all MongoDB queries (remove in production)
 mongoose.set('debug', true);
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`, req.body);
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/accounts', accountRoutes);
+
+
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is running' });
+});
 
 // Initialize Vision client with credentials from env
 let visionClient;
@@ -130,4 +143,12 @@ app.post('/api/scan-check', upload.single('image'), async (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+mongoose.connection.on('connected', () => {
+  console.log('Connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
 }); 

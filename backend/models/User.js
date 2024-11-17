@@ -36,4 +36,45 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+const accountSchema = new mongoose.Schema({
+  accountType: {
+    type: String,
+    required: true,
+    enum: ['checking', 'savings']
+  },
+  balance: {
+    type: Number,
+    default: 0
+  },
+  transactions: [{
+    type: {
+      type: String,
+      required: true,
+      enum: ['deposit', 'withdrawal', 'transfer']
+    },
+    amount: {
+      type: Number,
+      required: true
+    },
+    description: String,
+    date: {
+      type: Date,
+      default: Date.now
+    }
+  }]
+});
+
+accountSchema.methods.updateBalance = async function(amount, type) {
+  if (type === 'deposit') {
+    this.balance += amount;
+  } else if (type === 'withdrawal' || type === 'transfer') {
+    this.balance -= amount;
+  }
+  return this.balance;
+};
+
+userSchema.add({
+  accounts: [accountSchema]
+});
+
 module.exports = mongoose.model('User', userSchema); 

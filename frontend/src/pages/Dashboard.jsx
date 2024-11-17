@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CurrencyDollarIcon,
   BanknotesIcon,
@@ -22,6 +22,35 @@ import CheckScanner from '../components/CheckScanner';
 function Dashboard() {
   const [showScanner, setShowScanner] = useState(false);
   const [scannerType, setScannerType] = useState(null); // 'cash' or 'check'
+  const [balance, setBalance] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBalance();
+  }, []);
+
+  const fetchBalance = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/accounts/balance`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setBalance(data.balance);
+        console.log('Fetched balance:', data.balance); // Debug log
+      } else {
+        console.error('Failed to fetch balance');
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleScan = async (result) => {
     try {
@@ -88,7 +117,9 @@ function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-sm">Total Balance</p>
-                <h2 className="text-3xl font-bold text-white mt-1">$2,459.50</h2>
+                <h2 className="text-3xl font-bold text-white mt-1">
+                  {isLoading ? 'Loading...' : `$${balance.toFixed(2)}`}
+                </h2>
                 <p className="text-white/60 text-sm mt-2">+15.3% from last month</p>
               </div>
               <div className="bg-white/20 p-3 rounded-lg">
